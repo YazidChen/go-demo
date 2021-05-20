@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
 	"log"
 	"rsc.io/quote"
 	"yazid.com/greetings"
+	"yazid.com/hello/morestrings"
 )
 
 func main() {
@@ -14,6 +16,8 @@ func main() {
 	fmt.Println("Hello World!")
 	fmt.Println(quote.Go())
 
+	fmt.Println(morestrings.ReverseRunes("!oG ,olleH"))
+	fmt.Println(cmp.Diff("Hello World", "Hello Go"))
 	names := []string{"Yazid", "Toby", "Tom"}
 	message3, err3 := greetings.Hellos(names)
 	if err3 != nil {
