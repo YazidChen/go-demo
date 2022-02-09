@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	articleV1 "yazidchen.com/go-programming-tour-book/blog-service/internal/article/api/v1"
+	"yazidchen.com/go-programming-tour-book/blog-service/internal/middleware"
 	tagV1 "yazidchen.com/go-programming-tour-book/blog-service/internal/tag/api/v1"
 )
 
@@ -10,6 +11,7 @@ func NewRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(middleware.Translations())
 
 	tag := tagV1.NewTag()
 	article := articleV1.NewArticle()
