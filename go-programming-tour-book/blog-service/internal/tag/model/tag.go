@@ -1,6 +1,9 @@
 package model
 
-import "yazidchen.com/go-programming-tour-book/blog-service/internal/base"
+import (
+	"github.com/jinzhu/gorm"
+	"yazidchen.com/go-programming-tour-book/blog-service/internal/base"
+)
 
 type Tag struct {
 	*base.Model
@@ -12,24 +15,41 @@ func (t Tag) TableName() string {
 	return "blog_tag"
 }
 
-type TagGetReq struct {
-	Name  string `form:"name" binding:"max=100"`
-	State uint8  `form:"state,default=1" binding:"oneof=0 1"`
+func (t Tag) Count(db *gorm.DB) (int, error) {
+	var count int
+	if t.Name != "" {
+		db = db.Where("name = ?", t.Name)
+	}
+	db = db.Where("state = ?", t.State)
+	if err := db.Model(&t).Where("is_del = ?", 0).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
-type TagCreateReq struct {
-	Name     string `form:"name" binding:"required,min=3,max=100"`
-	CreateBy string `form:"create_by" binding:"required,min=3,max=100"`
-	State    uint8  `form:"state,default=1" binding:"oneof=0 1"`
+func (t Tag) List(db *gorm.DB, offset, pageSize int) ([]*Tag, error) {
+	var tags []*Tag
+	if offset > 0 && pageSize > 0 {
+		db = db.Offset(offset).Limit(pageSize)
+	}
+	if t.Name != "" {
+		db = db.Where("name = ?", t.Name)
+	}
+	db = db.Where("state = ?", t.State)
+	if err := db.Where("is_del = ?", 0).Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
 }
 
-type TagUpdateReq struct {
-	ID         uint32 `form:"id" binding:"required,gte=1"`
-	Name       string `form:"name" binding:"required,min=3,max=100"`
-	State      string `form:"state" binding:"required,oneof=0 1"`
-	ModifiedBy string `form:"modified_by" binding:"required,min=3,max=100"`
+func (t Tag) Create(db *gorm.DB) error {
+	return db.Create(&t).Error
 }
 
-type TagDelReq struct {
-	ID uint32 `form:"id" binding:"required,gte=1"`
+func (t Tag) Update(db *gorm.DB) error {
+	return db.Model(&Tag{}).Where("id = ? AND is_del = ?", t.ID, 0).Update(&t).Error
+}
+
+func (t Tag) Del(db *gorm.DB) error {
+	return db.Where("id = ? AND is_del = ?", t.ID, 0).Delete(&t).Error
 }
